@@ -1,90 +1,65 @@
-import {CameraView, CameraProps, useCameraPermissions } from "expo-camera";
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import Slider from '@react-native-community/slider';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Fontisto from '@expo/vector-icons/Fontisto';
+import { CameraView, CameraProps, useCameraPermissions } from "expo-camera";
 import MlkitOcr from 'react-native-mlkit-ocr';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
 
-
 export default function AppCamera() {
-  // @ts-ignore: just being lazy with types here
-  const cameraRef = useRef<CameraView>(undefined);
+  const cameraRef = useRef<CameraView>(null);
   const [facing, setFacing] = useState<CameraProps["facing"]>("back");
   const [permission, requestPermission] = useCameraPermissions();
   const [pickedImagePath, setPickedImagePath] = useState('');
   const [image, setImage] = useState(null);
-  
   const [extractedText, setExtractedText] = useState('');
   const [carNumberLines, setCarNumberLines] = useState<string[]>([]);
   const [carNumbers, setCarNumbers] = useState<string[]>([]);
+  const [zoom, setZoom] = useState(0); // Zoom state
 
   const carNumberPattern = /\b[A-Za-z0-9 ]{1,6}\b/g;
 
   const saveAndReadPhoto = async () => {
     try {
-
       const photo = await cameraRef.current?.takePictureAsync();
-
-      // Request camera roll permissions
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== 'granted') {
-       alert('Sorry, we need camera roll permissions to save photos!');
+        alert('Sorry, we need camera roll permissions to save photos!');
         return;
       }
-  
-      // Save the photo to the media library
       const asset = await MediaLibrary.createAssetAsync(photo.uri);
-      
-  
       const pickedImage = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
         quality: 1,
       });
-
-
-      alert("Image Picker Result:", pickedImage); // Log the entire result for debugging
-
-      // Check if MlkitOcr is properly initialized
+      alert("Image Picker Result:", pickedImage);
       if (!MlkitOcr || typeof MlkitOcr.detectFromUri !== 'function') {
         throw new Error('MlkitOcr is not initialized correctly.');
       }
-    
-      // Perform OCR on the saved photo
       const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
-  
       const text = ocrResult.map(block => block.text).join('\n');
-
-      setExtractedText(text)
-     
+      setExtractedText(text);
       const linesWithCarNumbers = extractedText.split('\n').filter(line => carNumberPattern.test(line));
-      setCarNumberLines(linesWithCarNumbers)
-
+      setCarNumberLines(linesWithCarNumbers);
       const carNumberMatches = linesWithCarNumbers
         .flatMap(line => line.match(carNumberPattern) || [])
         .filter(Boolean);
-
       setCarNumbers(carNumberMatches);
-
     } catch (error) {
-      // Log and alert the error
-      alert(JSON.stringify(error, Object.getOwnPropertyNames(error)))
-      console.log(JSON.stringify(error, Object.getOwnPropertyNames(error)))
+      alert(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+      console.log(JSON.stringify(error, Object.getOwnPropertyNames(error)));
     }
   };
-  
-  
 
   if (!permission) {
-    // Camera permissions are still loading.
     return <View />;
   }
 
   if (!permission.granted) {
-    // Camera permissions are not granted yet.
     return (
       <View style={styles.permissionsContainer}>
         <Text style={{ textAlign: "center" }}>
@@ -101,13 +76,9 @@ export default function AppCamera() {
 
   return (
     <View style={styles.container}>
-      <CameraView style={styles.camera} facing={facing} ref={cameraRef}>
-        {/* Overlap the camera preview with a transparent button container for visual appeal */}
-        <TouchableOpacity style={styles.buttonContainer} onPress={() => { }}>
-          {/* Empty onPress handler to prevent unnecessary actions */}
-        </TouchableOpacity>
+      <CameraView style={styles.camera} facing={facing} zoom={zoom} ref={cameraRef}>
+        <TouchableOpacity style={styles.buttonContainer} onPress={() => { }} />
 
-        {/* Add the control buttons directly inside the CameraView */}
         <View style={styles.flipPanel}>
           <TouchableOpacity style={styles.flipButton} onPress={toggleCameraFacing}>
             <MaterialIcons name="flip-camera-ios" size={30} color="black" />
@@ -119,9 +90,21 @@ export default function AppCamera() {
             <Fontisto name="camera" size={30} color="black" />
           </TouchableOpacity>
         </View>
-        
       </CameraView>
-       {extractedText !== '' && (
+
+      <View style={styles.zoomControl}>
+        <Slider
+          style={{ width: 300, height: 40 }}
+          minimumValue={0}
+          maximumValue={0.1}
+          value={zoom}
+          onValueChange={(value) => setZoom(value)}
+          minimumTrackTintColor="#FFFFFF"
+          maximumTrackTintColor="#000000"
+        />
+      </View>
+
+      {extractedText !== '' && (
         <View style={styles.container}>
           <Text>{extractedText}</Text>
         </View>
@@ -155,7 +138,7 @@ const styles = StyleSheet.create({
   },
   flipPanel: {
     position: 'absolute',
-    marginTop:'15%',
+    marginTop: '15%',
     right: '1%',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -163,10 +146,10 @@ const styles = StyleSheet.create({
   },
   cameraPanel: {
     position: 'absolute',
-    bottom: 30, // Adjust as needed
+    bottom: 30,
     flexDirection: 'row',
     justifyContent: 'center',
-    alignSelf:'center',
+    alignSelf: 'center',
     paddingHorizontal: 20,
   },
   flipButton: {
@@ -179,9 +162,15 @@ const styles = StyleSheet.create({
     padding: 7,
     borderRadius: 20,
   },
+  zoomControl: {
+    position: 'absolute',
+    bottom: 100,
+    left: '35%',
+    transform: [{ translateX: -100 }],
+  },
   permissionsContainer: {
     flex: 1,
-    marginTop:'25%',
-    marginBottom:'25%',
-  }
+    marginTop: '25%',
+    marginBottom: '25%',
+  },
 });
