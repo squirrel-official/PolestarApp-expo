@@ -7,6 +7,8 @@ import { CameraView, CameraProps, useCameraPermissions } from "expo-camera";
 import MlkitOcr from 'react-native-mlkit-ocr';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
+import axios from 'axios';
+
 
 export default function AppCamera() {
   const cameraRef = useRef<CameraView>(null);
@@ -19,7 +21,7 @@ export default function AppCamera() {
   const [carNumbers, setCarNumbers] = useState<string[]>([]);
   const [zoom, setZoom] = useState(0); // Zoom state
 
-  const carNumberPattern = /\b[A-Za-z0-9 ]{1,6}\b/g;
+  const carNumberPattern = /\b[A-Za-z0-9 ]{5,6}\b/g;
 
   const saveAndReadPhoto = async () => {
     try {
@@ -30,6 +32,7 @@ export default function AppCamera() {
         return;
       }
       const asset = await MediaLibrary.createAssetAsync(photo.uri);
+
       const pickedImage = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -49,11 +52,29 @@ export default function AppCamera() {
         .flatMap(line => line.match(carNumberPattern) || [])
         .filter(Boolean);
       setCarNumbers(carNumberMatches);
+      checkCarRegistration(carNumberMatches)
+      checkCarRegistration('ABC200')
     } catch (error) {
       alert(JSON.stringify(error, Object.getOwnPropertyNames(error)));
       console.log(JSON.stringify(error, Object.getOwnPropertyNames(error)));
     }
   };
+
+
+  const checkCarRegistration = (regoNumber) => {
+    var url = "https://api.mynetra.com/check-registration?regoNumber=" + regoNumber
+    
+    axios.get(url)
+      .then(response => {
+        alert(JSON.stringify(response))
+        alert(JSON.stringify(response.data))
+        alert(JSON.stringify(response.data.registrationInfo))
+      })
+      .catch(error => {
+        alert(JSON.stringify(error.message));
+      });
+  };
+
 
   if (!permission) {
     return <View />;
