@@ -91,7 +91,7 @@ export default function AppCamera() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-      <View style={styles.container}>
+    <View style={styles.container}>
         <CameraView style={styles.camera} facing={facing} zoom={zoom} ref={cameraRef}>
           <TouchableOpacity style={styles.buttonContainer} onPress={() => { }} />
 
@@ -125,11 +125,11 @@ export default function AppCamera() {
             <Text style={styles.detectedCarNumbersTitle}>Detected Car Numbers:</Text>
             <View style={styles.detectedCarNumbersContainer}>
               <View style={styles.textInputContainer}>
-                <TextInput
-                  value={carNumber}
-                  onChangeText={(text) => handleChange(text)}
-                  style={styles.textInput}
-                />
+            <TextInput
+              value={carNumber}
+              onChangeText={(text) => handleChange(text)}
+                  style={styles.carNumberInput}
+            />
               </View>
             </View>
 
@@ -144,7 +144,7 @@ export default function AppCamera() {
           </View>
         )}
 
-      </View>
+    </View>
     </KeyboardAvoidingView>
   );
 }
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   flipButton: {
-    backgroundColor: 'grey',
+    backgroundColor: 'transparent', // Remove background
     padding: 5,
     borderRadius: 20,
   },
@@ -215,6 +215,7 @@ const styles = StyleSheet.create({
   detectedCarNumbersContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    padding: 10,
   },
   textInputContainer: {
     backgroundColor: '#F0F0F0',
@@ -228,7 +229,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   submitButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#33CC33', // Consider a green color
     padding: 10,
     borderRadius: 5,
     alignItems: 'center',
@@ -252,5 +253,20 @@ const styles = StyleSheet.create({
   buttonGroup: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+  },
+  
+  captureButtonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  cameraControls: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end', // Align controls to the right
+  },
+  carNumberInput: {
+    backgroundColor: '#F0F0F0',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
   },
 });
