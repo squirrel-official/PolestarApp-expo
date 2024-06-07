@@ -49,7 +49,8 @@ export default function AppCamera() {
 
   const checkCarRegistration = (regoNumber) => {
     var url = "https://api.mynetra.com/check-registration?regoNumber=" + regoNumber
-    
+    alert('checkCarRegistration')
+    alert(JSON.stringify(regoNumber))
     axios.get(url)
       .then(response => {
         alert(JSON.stringify(response.data))
@@ -65,7 +66,8 @@ export default function AppCamera() {
   };
 
   const cancelEditing = () => {
-    console.log('Editing cancelled');
+    // clearing the car number
+    setCarNumber('');
   };
 
   if (!permission) {
