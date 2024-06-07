@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Button, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Button, StyleSheet, Text, TouchableOpacity, View, TextInput } from "react-native";
 import Slider from '@react-native-community/slider';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Fontisto from '@expo/vector-icons/Fontisto';
@@ -16,7 +16,6 @@ export default function AppCamera() {
   const [permission, requestPermission] = useCameraPermissions();
   const [pickedImagePath, setPickedImagePath] = useState('');
   const [image, setImage] = useState(null);
-  const [extractedText, setExtractedText] = useState('');
   const [carNumberLines, setCarNumberLines] = useState<string[]>([]);
   const [carNumbers, setCarNumbers] = useState<string[]>([]);
   const [zoom, setZoom] = useState(0); // Zoom state
@@ -43,17 +42,19 @@ export default function AppCamera() {
       if (!MlkitOcr || typeof MlkitOcr.detectFromUri !== 'function') {
         throw new Error('MlkitOcr is not initialized correctly.');
       }
-      const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
-      const text = ocrResult.map(block => block.text).join('\n');
-      setExtractedText(text);
-      const linesWithCarNumbers = extractedText.split('\n').filter(line => carNumberPattern.test(line));
+      // const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
+      // const text = ocrResult.map(block => block.text).join('\n');
+      const text = '1022MF'
+      alert(text)
+      const linesWithCarNumbers = text.split('\n').filter(line => carNumberPattern.test(line));
+      alert(linesWithCarNumbers)
       setCarNumberLines(linesWithCarNumbers);
       const carNumberMatches = linesWithCarNumbers
         .flatMap(line => line.match(carNumberPattern) || [])
         .filter(Boolean);
       setCarNumbers(carNumberMatches);
-      checkCarRegistration(carNumberMatches)
-      checkCarRegistration('ABC200')
+      // checkCarRegistration(carNumberMatches)
+      // checkCarRegistration('ABC200')
     } catch (error) {
       alert(JSON.stringify(error, Object.getOwnPropertyNames(error)));
       console.log(JSON.stringify(error, Object.getOwnPropertyNames(error)));
@@ -75,6 +76,15 @@ export default function AppCamera() {
       });
   };
 
+  const handleChange = (text, index) => {
+    const newCarNumbers = [...carNumbers];
+    newCarNumbers[index] = text;
+    setCarNumbers(newCarNumbers);
+  };
+
+  const cancelEditing = () => {
+    console.log('Editing cancelled');
+  };
 
   if (!permission) {
     return <View />;
@@ -125,20 +135,32 @@ export default function AppCamera() {
         />
       </View>
 
-      {extractedText !== '' && (
-        <View style={styles.container}>
-          <Text>{extractedText}</Text>
+      {carNumbers.length > 0 && (
+        <View>
+          <Text>Detected Car Numbers:</Text>
+          {carNumbers.map((number, index) => (
+            <TextInput
+              key={index}
+              value={number}
+              onChangeText={(text) => handleChange(text, index)}
+              style={styles.textInput}
+            />
+          ))}
+
+          <View style={styles.buttonGroup}>
+            <TouchableOpacity style={styles.cancelButton} onPress={cancelEditing}>
+              <Text style={styles.buttonText}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.submitButton} onPress={checkCarRegistration}>
+              <Text style={styles.buttonText}>Submit</Text>
+            </TouchableOpacity>
+          </View>
+
         </View>
       )}
 
-      {carNumbers.length > 0 && (
-        <View style={styles.container}>
-          <Text>Detected Car Numbers:</Text>
-          {carNumbers.map((number, index) => (
-            <Text key={index}>{number}</Text>
-          ))}
-        </View>
-      )}
+
+
     </View>
   );
 }
@@ -193,5 +215,36 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: '25%',
     marginBottom: '25%',
+  },
+  textInput: {
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 5,
+  },
+  submitButton: {
+    backgroundColor: '#007BFF',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 20,
+    marginRight: 25
+  },
+  cancelButton: {
+    backgroundColor: '#FF0000',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 20,
+    marginLeft: 25,
+  },
+  buttonText: {
+    color: 'white',
+    fontSize: 16,
+  },
+  buttonGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });
