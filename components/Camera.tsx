@@ -39,10 +39,9 @@ export default function AppCamera() {
       }
       const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
       const carNumber = ocrResult.map(block => block.text).join('\n');
-      // const text = '1022MF'
+      // const carNumber = "1022MF"
       setCarNumber(carNumber);
     } catch (error) {
-      alert(JSON.stringify(error, Object.getOwnPropertyNames(error)));
       console.log(JSON.stringify(error, Object.getOwnPropertyNames(error)));
     }
   };
@@ -122,16 +121,15 @@ export default function AppCamera() {
         {carNumber.length > 0 && (
           <View>
             <Text style={styles.detectedCarNumbersTitle}>Detected Car Numbers:</Text>
-              <View style={styles.detectedCarNumbersContainer}>
-                  <View  style={styles.textInputContainer}>
-                    <TextInput
-                      value={carNumber}
-                      onChangeText={(text) => handleChange(text)}
-                      style={styles.textInput}
-                    />
-                  </View>
-                ))
+            <View style={styles.detectedCarNumbersContainer}>
+              <View style={styles.textInputContainer}>
+                <TextInput
+                  value={carNumber}
+                  onChangeText={(text) => handleChange(text)}
+                  style={styles.textInput}
+                />
               </View>
+            </View>
 
             <View style={styles.buttonGroup}>
               <TouchableOpacity style={styles.cancelButton} onPress={cancelEditing}>
@@ -141,9 +139,9 @@ export default function AppCamera() {
                 <Text style={styles.buttonText}>Submit</Text>
               </TouchableOpacity>
             </View>
-
           </View>
         )}
+
       </View>
     </KeyboardAvoidingView>
   );
