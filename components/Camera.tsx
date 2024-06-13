@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Button, StyleSheet, Text, TouchableOpacity, View, TextInput, KeyboardAvoidingView } from "react-native";
+import {SafeAreaView, ScrollView, Button, StyleSheet, Text, TouchableOpacity, View, TextInput, KeyboardAvoidingView } from "react-native";
 import Slider from '@react-native-community/slider';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Fontisto from '@expo/vector-icons/Fontisto';
@@ -8,6 +8,7 @@ import MlkitOcr from 'react-native-mlkit-ocr';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 export default function AppCamera() {
   const cameraRef = useRef<CameraView>(null);
@@ -15,7 +16,9 @@ export default function AppCamera() {
   const [permission, requestPermission] = useCameraPermissions();
   const [carNumber, setCarNumber] = useState('');
   const [zoom, setZoom] = useState(0); // Zoom state
-
+  const [loading, setLoading] = useState(false); 
+  const [showCarNumbers, setShowCarNumbers] = useState(false); 
+  const [registrationInfo, setRegistrationInfo] = useState(null); 
   const carNumberPattern = /\b[A-Za-z0-9 ]{5,6}\b/g;
 
   const saveAndReadPhoto = async () => {
@@ -39,26 +42,36 @@ export default function AppCamera() {
       }
       const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
       const carNumber = ocrResult.map(block => block.text).join('\n');
-      // const carNumber = "1022MF"
+      // const carNumber = "ABC200"
       setCarNumber(carNumber);
+      setShowCarNumbers(true);
     } catch (error) {
       console.log(JSON.stringify(error, Object.getOwnPropertyNames(error)));
     }
   };
 
 
-  const checkCarRegistration = (regoNumber) => {
-    var url = "https://api.mynetra.com/check-registration?regoNumber=" + regoNumber
-    alert('checkCarRegistration')
-    alert(JSON.stringify(regoNumber))
+  const checkCarRegistration = () => {
+    var url = "https://api.mynetra.com/check-registration?regoNumber="+ carNumber;
+    setLoading(true); 
+    setShowCarNumbers(false);
     axios.get(url)
       .then(response => {
-        alert(JSON.stringify(response.data))
-        alert(JSON.stringify(response.data.registrationInfo))
+        setRegistrationInfo(response.data.registrationInfo)
       })
       .catch(error => {
         alert(JSON.stringify(error.message));
+      })
+      .finally(() => {
+        setLoading(false); 
       });
+  };
+
+  const isRegistrationValid = () => {
+    if (!registrationInfo) {
+      return false;
+    }
+    return registrationInfo.registrationStatus.toLowerCase().includes("current");
   };
 
   const handleChange = (text) => {
@@ -69,6 +82,10 @@ export default function AppCamera() {
     // clearing the car number
     setCarNumber('');
   };
+
+ const clearRegistrationInfo = () =>{
+  setRegistrationInfo(null)
+ }
 
   if (!permission) {
     return <View />;
@@ -100,6 +117,7 @@ export default function AppCamera() {
               <MaterialIcons name="flip-camera-ios" size={30} color="black" />
             </TouchableOpacity>
           </View>
+          
 
           <View style={styles.cameraPanel}>
             <TouchableOpacity style={styles.captureButton} onPress={saveAndReadPhoto}>
@@ -120,7 +138,55 @@ export default function AppCamera() {
           />
         </View>
 
-        {carNumber.length > 0 && (
+      <Spinner
+          visible={loading}
+          size='large'
+          textContent={'Verifying the details...'}
+          textStyle={{ color: '#FFF' }}
+        /> 
+  
+  {registrationInfo && isRegistrationValid() && (
+
+  <SafeAreaView style={styles.detectedCarNumbersContainer}>
+    <ScrollView contentContainerStyle={styles.scrollView}>
+      <View style={styles.card}>
+        <Text style={styles.title}>Vehicle Registration Details</Text>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Registration Number:</Text>
+          <Text style={styles.value}>{registrationInfo.registrationNumber}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Status: </Text>
+          <Text style={styles.value}>{registrationInfo.registrationStatus}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Body Type:</Text>
+          <Text style={styles.value}>{registrationInfo.bodyType}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Colour:</Text>
+          <Text style={styles.value}>{registrationInfo.colour}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Sanctions Applicable:</Text>
+          <Text style={styles.value}>{registrationInfo.sanctionsApplicable}</Text>
+        </View>
+        <View style={styles.infoContainer}>
+          <Text style={styles.label}>Transfer in Dispute:</Text>
+          <Text style={styles.value}>{registrationInfo.transferInDispute}</Text>
+        </View>
+      </View>
+      <View style={styles.buttonGroup}>
+                <TouchableOpacity style={styles.cancelButton} onPress={clearRegistrationInfo}>
+                  <Text style={styles.buttonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+    </ScrollView>
+  </SafeAreaView>
+)}
+
+
+        {carNumber.length > 0 && showCarNumbers && (
           <View>
             <Text style={styles.detectedCarNumbersTitle}>Detected Car Numbers:</Text>
             <View style={styles.detectedCarNumbersContainer}>
@@ -215,7 +281,7 @@ const styles = StyleSheet.create({
   detectedCarNumbersContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    padding: 10,
+    padding: 0,
   },
   textInputContainer: {
     backgroundColor: '#F0F0F0',
@@ -265,8 +331,46 @@ const styles = StyleSheet.create({
   },
   carNumberInput: {
     backgroundColor: '#F0F0F0',
-    borderRadius: 5,
+    borderRadius: 1,
     padding: 10,
     marginBottom: 10,
+  },
+  card: {
+    width: '90%',
+    // backgroundColor: '#fff',
+    backgroundColor: '#c1f587',
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#333',
+    textAlign: 'center',
+  },
+  infoContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  label: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#666',
+  },
+  value: {
+    fontSize: 15,
+    color: '#333',
+  },
+  scrollView: {
+    padding: 0,
+    alignItems: 'center',
+    backgroundColor: '#ebf0e4'
   },
 });
