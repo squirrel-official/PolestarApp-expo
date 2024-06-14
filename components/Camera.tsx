@@ -43,9 +43,9 @@ export default function AppCamera() {
       if (!MlkitOcr || typeof MlkitOcr.detectFromUri !== 'function') {
         throw new Error('MlkitOcr is not initialized correctly.');
       }
-      const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
-      const carNumber = ocrResult.map(block => block.text).join('\n');
-      // const carNumber = "ABC200"
+      // const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
+      // const carNumber = ocrResult.map(block => block.text).join('\n');
+      const carNumber = "ABC201"
       setCarNumber(carNumber);
       setShowCarNumbers(true);
     } catch (error) {
@@ -67,8 +67,9 @@ export default function AppCamera() {
         setExpiredRegistration(registrationStatus.includes("expired"))
       })
       .catch(error => {
-        alert(JSON.stringify(error, Object.getOwnPropertyNames(error)));
-        alert(JSON.stringify(error.message));
+        // alert(JSON.stringify(error.message));
+        alert('We could not identify this Registration number');
+
       })
       .finally(() => {
         setLoading(false); 
@@ -109,112 +110,111 @@ export default function AppCamera() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-    <View style={styles.container}>
-        <CameraView style={styles.camera} facing={facing} zoom={zoom} ref={cameraRef}>
-          <TouchableOpacity style={styles.buttonContainer} onPress={() => { }} />
+      <View style={styles.container}>
+          <CameraView style={styles.camera} facing={facing} zoom={zoom} ref={cameraRef}>
+            <TouchableOpacity style={styles.buttonContainer} onPress={() => { }} />
 
-          <View style={styles.flipPanel}>
-            <TouchableOpacity style={styles.flipButton} onPress={toggleCameraFacing}>
-              <MaterialIcons name="flip-camera-ios" size={30} color="black" />
-            </TouchableOpacity>
-          </View>
-          
+            <View style={styles.flipPanel}>
+              <TouchableOpacity style={styles.flipButton} onPress={toggleCameraFacing}>
+                <MaterialIcons name="flip-camera-ios" size={30} color="black" />
+              </TouchableOpacity>
+            </View>
+            
 
-          <View style={styles.cameraPanel}>
-            <TouchableOpacity style={styles.captureButton} onPress={saveAndReadPhoto}>
-              <Fontisto name="camera" size={30} color="black" />
-            </TouchableOpacity>
-          </View>
-        </CameraView>
+            <View style={styles.cameraPanel}>
+              <TouchableOpacity style={styles.captureButton} onPress={saveAndReadPhoto}>
+                <Fontisto name="camera" size={30} color="black" />
+              </TouchableOpacity>
+            </View>
+          </CameraView>
 
-        <View style={styles.zoomControl}>
-          <Slider
-            style={styles.slider}
-            minimumValue={0}
-            maximumValue={0.1}
-            value={zoom}
-            onValueChange={(value) => setZoom(value)}
-            minimumTrackTintColor="#FFFFFF"
-            maximumTrackTintColor="#000000"
-          />
-        </View>
-
-      <Spinner
-          visible={loading}
-          size='large'
-          textContent={'Verifying the details...'}
-          textStyle={{ color: '#FFF' }}
-        /> 
-  
-  {registrationInfo && (
-
-  <SafeAreaView style={styles.detectedCarNumbersContainer}>
-    <ScrollView contentContainerStyle={styles.scrollView}>
-      <View style={styles.card}>
-        <Text style={styles.title}>Vehicle Registration Details</Text>
-        <View style={styles.infoContainer}>
-          <Text style={styles.label}>Registration Number:</Text>
-          <Text style={styles.value}>{registrationInfo.registrationNumber}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.label}>Status: </Text>
-          <Text style={validRegistration ? styles.value : styles.expiredStatus}>
-            {registrationInfo.registrationStatus}
-          </Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.label}>Body Type:</Text>
-          <Text style={styles.value}>{registrationInfo.bodyType}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.label}>Colour:</Text>
-          <Text style={styles.value}>{registrationInfo.colour}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.label}>Sanctions Applicable:</Text>
-          <Text style={styles.value}>{registrationInfo.sanctionsApplicable}</Text>
-        </View>
-        <View style={styles.infoContainer}>
-          <Text style={styles.label}>Transfer in Dispute:</Text>
-          <Text style={styles.value}>{registrationInfo.transferInDispute}</Text>
-        </View>
-      </View>
-      <View style={styles.buttonGroup}>
-                <TouchableOpacity style={styles.cancelButton} onPress={clearRegistrationInfo}>
-                  <Text style={styles.buttonText}>Close</Text>
-                </TouchableOpacity>
-              </View>
-    </ScrollView>
-  </SafeAreaView>
-)}
-
-
-        {carNumber.length > 0 && showCarNumbers && (
-          <View>
-            <Text style={styles.detectedCarNumbersTitle}>Detected Car Numbers:</Text>
-            <View style={styles.detectedCarNumbersContainer}>
-              <View style={styles.textInputContainer}>
-            <TextInput
-              value={carNumber}
-              onChangeText={(text) => handleChange(text)}
-                  style={styles.carNumberInput}
+          <View style={styles.zoomControl}>
+            <Slider
+              style={styles.slider}
+              minimumValue={0}
+              maximumValue={0.1}
+              value={zoom}
+              onValueChange={(value) => setZoom(value)}
+              minimumTrackTintColor="#FFFFFF"
+              maximumTrackTintColor="#000000"
             />
-              </View>
-            </View>
-
-            <View style={styles.buttonGroup}>
-              <TouchableOpacity style={styles.cancelButton} onPress={cancelEditing}>
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.submitButton} onPress={checkCarRegistration}>
-                <Text style={styles.buttonText}>Submit</Text>
-              </TouchableOpacity>
-            </View>
           </View>
+
+        <Spinner
+            visible={loading}
+            size='large'
+            textContent={'Verifying the details...'}
+            textStyle={{ color: '#FFF' }}
+          /> 
+    
+          {registrationInfo && (
+          <SafeAreaView style={styles.detectedCarNumbersContainer}>
+            <ScrollView contentContainerStyle={styles.scrollView}>
+              <View style={styles.card}>
+                <Text style={styles.title}>Vehicle Registration Details</Text>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.label}>Registration Number:</Text>
+                  <Text style={styles.value}>{registrationInfo.registrationNumber}</Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.label}>Status: </Text>
+                  <Text style={validRegistration ? styles.value : styles.expiredStatus}>
+                    {registrationInfo.registrationStatus}
+                  </Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.label}>Body Type:</Text>
+                  <Text style={styles.value}>{registrationInfo.bodyType}</Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.label}>Colour:</Text>
+                  <Text style={styles.value}>{registrationInfo.colour}</Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.label}>Sanctions Applicable:</Text>
+                  <Text style={styles.value}>{registrationInfo.sanctionsApplicable}</Text>
+                </View>
+                <View style={styles.infoContainer}>
+                  <Text style={styles.label}>Transfer in Dispute:</Text>
+                  <Text style={styles.value}>{registrationInfo.transferInDispute}</Text>
+                </View>
+              </View>
+              <View style={styles.buttonGroup}>
+                        <TouchableOpacity style={styles.closeButton} onPress={clearRegistrationInfo}>
+                          <Text style={styles.closeButtonText}>Close</Text>
+                        </TouchableOpacity>
+                      </View>
+            </ScrollView>
+          </SafeAreaView>
         )}
 
+
+          {carNumber.length > 0 && showCarNumbers && (
+            <View>
+              <Text style={styles.detectedCarNumbersTitle}>Detected Car Numbers:</Text>
+              <View style={styles.detectedCarNumbersContainer}>
+                <View style={styles.textInputContainer}>
+              <TextInput
+                value={carNumber}
+                onChangeText={(text) => handleChange(text)}
+                    style={styles.carNumberInput}
+              />
+                </View>
+              </View>
+
+              <View style={styles.buttonGroup}>
+                <TouchableOpacity style={styles.cancelButton} onPress={cancelEditing}>
+                  <Text style={styles.buttonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.submitButton} onPress={checkCarRegistration}>
+                  <Text style={styles.buttonText}>Submit</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
     </View>
-    </KeyboardAvoidingView>
+  </KeyboardAvoidingView>
   );
 }
 
@@ -315,6 +315,15 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 5,
   },
+  closeButton: {
+    backgroundColor: '#e0db43',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 20,
+    flex: 1,
+    marginRight: 5,
+  },
   buttonText: {
     color: 'white',
     fontSize: 16,
@@ -323,10 +332,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  
-  captureButtonText: {
-    color: 'white',
+  closeButtonText: {
+    color: 'black',
     fontSize: 16,
+    fontWeight: '600',
   },
   cameraControls: {
     flexDirection: 'row',
