@@ -19,6 +19,9 @@ export default function AppCamera() {
   const [loading, setLoading] = useState(false); 
   const [showCarNumbers, setShowCarNumbers] = useState(false); 
   const [registrationInfo, setRegistrationInfo] = useState(null); 
+  const [validRegistration, setValidRegistration] = useState(false);
+  const [expiredRegistration, setExpiredRegistration] = useState(false);
+
   const carNumberPattern = /\b[A-Za-z0-9 ]{5,6}\b/g;
 
   const saveAndReadPhoto = async () => {
@@ -57,21 +60,19 @@ export default function AppCamera() {
     setShowCarNumbers(false);
     axios.get(url)
       .then(response => {
-        setRegistrationInfo(response.data.registrationInfo)
+        var registrationInfo =  response.data.registrationInfo;
+        var registrationStatus = registrationInfo.registrationStatus.toLowerCase();
+        setRegistrationInfo(registrationInfo)
+        setValidRegistration(registrationStatus.includes("current"))
+        setExpiredRegistration(registrationStatus.includes("expired"))
       })
       .catch(error => {
+        alert(JSON.stringify(error, Object.getOwnPropertyNames(error)));
         alert(JSON.stringify(error.message));
       })
       .finally(() => {
         setLoading(false); 
       });
-  };
-
-  const isRegistrationValid = () => {
-    if (!registrationInfo) {
-      return false;
-    }
-    return registrationInfo.registrationStatus.toLowerCase().includes("current");
   };
 
   const handleChange = (text) => {
@@ -145,7 +146,7 @@ export default function AppCamera() {
           textStyle={{ color: '#FFF' }}
         /> 
   
-  {registrationInfo && isRegistrationValid() && (
+  {registrationInfo && (
 
   <SafeAreaView style={styles.detectedCarNumbersContainer}>
     <ScrollView contentContainerStyle={styles.scrollView}>
@@ -157,7 +158,9 @@ export default function AppCamera() {
         </View>
         <View style={styles.infoContainer}>
           <Text style={styles.label}>Status: </Text>
-          <Text style={styles.value}>{registrationInfo.registrationStatus}</Text>
+          <Text style={validRegistration ? styles.value : styles.expiredStatus}>
+            {registrationInfo.registrationStatus}
+          </Text>
         </View>
         <View style={styles.infoContainer}>
           <Text style={styles.label}>Body Type:</Text>
@@ -373,4 +376,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#ebf0e4'
   },
+  expiredStatus: {
+    fontSize: 15,
+    color: 'red',
+    fontWeight: 'bold',
+  },
+  validStatus: {
+    fontSize: 15,
+    color: '#333',
+  }
 });
