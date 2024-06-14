@@ -21,6 +21,8 @@ export default function AppCamera() {
   const [registrationInfo, setRegistrationInfo] = useState(null); 
   const [validRegistration, setValidRegistration] = useState(false);
   const [expiredRegistration, setExpiredRegistration] = useState(false);
+  const [showMessage, setShowMessage] = useState(false);
+
 
   const carNumberPattern = /\b[A-Za-z0-9 ]{5,6}\b/g;
 
@@ -43,9 +45,9 @@ export default function AppCamera() {
       if (!MlkitOcr || typeof MlkitOcr.detectFromUri !== 'function') {
         throw new Error('MlkitOcr is not initialized correctly.');
       }
-      // const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
-      // const carNumber = ocrResult.map(block => block.text).join('\n');
-      const carNumber = "ABC201"
+      const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
+      const carNumber = ocrResult.map(block => block.text).join('\n');
+      // const carNumber = "ABC201"
       setCarNumber(carNumber);
       setShowCarNumbers(true);
     } catch (error) {
@@ -67,9 +69,8 @@ export default function AppCamera() {
         setExpiredRegistration(registrationStatus.includes("expired"))
       })
       .catch(error => {
-        // alert(JSON.stringify(error.message));
-        alert('We could not identify this Registration number');
-
+        setShowMessage(true);
+        alert(JSON.stringify(error.message));
       })
       .finally(() => {
         setLoading(false); 
@@ -81,13 +82,16 @@ export default function AppCamera() {
   };
 
   const cancelEditing = () => {
-    // clearing the car number
     setCarNumber('');
   };
 
  const clearRegistrationInfo = () =>{
   setRegistrationInfo(null)
  }
+
+ const handleDismissMessage = () => {
+  setShowMessage(false);
+};
 
   if (!permission) {
     return <View />;
@@ -146,6 +150,21 @@ export default function AppCamera() {
             textContent={'Verifying the details...'}
             textStyle={{ color: '#FFF' }}
           /> 
+
+          {showMessage && (
+            <SafeAreaView style={styles.detectedCarNumbersContainer}>
+              <ScrollView contentContainerStyle={styles.scrollView}>
+              <View style={styles.messageContainer}>
+              <View>
+                <Text style={styles.title}>Unfortunately we could not verify the registration, kindly check the number again.</Text>
+                <TouchableOpacity onPress={handleDismissMessage} style={styles.dismissButton}>
+                  <Text style={styles.dismissButtonText}>Dismiss</Text>
+                </TouchableOpacity>
+                </View>
+              </View>
+              </ScrollView>
+            </SafeAreaView>
+          )}
     
           {registrationInfo && (
           <SafeAreaView style={styles.detectedCarNumbersContainer}>
@@ -349,7 +368,6 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '90%',
-    // backgroundColor: '#fff',
     backgroundColor: '#c1f587',
     borderRadius: 10,
     padding: 20,
@@ -393,5 +411,27 @@ const styles = StyleSheet.create({
   validStatus: {
     fontSize: 15,
     color: '#333',
-  }
+  },
+  messageContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#ffdddd',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  messageText: {
+    color: '#d9534f',
+  },
+  dismissButton: {
+    backgroundColor: '#d9534f',
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+    borderRadius: 18,
+    alignItems: 'center',
+  },
+  dismissButtonText: {
+    color: '#fff',
+  },
 });
