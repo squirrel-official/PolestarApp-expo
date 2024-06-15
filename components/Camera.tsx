@@ -10,10 +10,9 @@ import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import Spinner from 'react-native-loading-spinner-overlay';
 import SelectGalleryButton from "./SelectGalleryButton"; // Importing the custom button component
-import styles from '../assets/style/style'
+import styles from '../assets/style/style';
 import CarRegistrationInfo from "./CarRegistrationInfo";
 import DetectedCarNumberPanel from "./DetectedCarNumberPanel";
-
 
 export default function AppCamera() {
   const cameraRef = useRef<CameraView>(null);
@@ -24,11 +23,26 @@ export default function AppCamera() {
   const [loading, setLoading] = useState(false);
   const [showCarNumbers, setShowCarNumbers] = useState(false);
   const [registrationInfo, setRegistrationInfo] = useState(null);
-  const [validRegistration, setValidRegistration] = useState(false);
-  const [expiredRegistration, setExpiredRegistration] = useState(false);
+  const [validRegistration, setValidRegistration] = useState(false); // Added state
+  const [expiredRegistration, setExpiredRegistration] = useState(false); // Added state
   const [showMessage, setShowMessage] = useState(false);
 
   const carNumberPattern = /\b[A-Za-z0-9 ]{5,6}\b/g;
+
+  const processImageAndOCR = async (imageUri) => {
+    try {
+      if (!MlkitOcr || typeof MlkitOcr.detectFromUri !== 'function') {
+        throw new Error('MlkitOcr is not initialized correctly.');
+      }
+      const ocrResult = await MlkitOcr.detectFromUri(imageUri);
+      const carNumber = ocrResult.map(block => block.text).join('\n');
+      setCarNumber(carNumber);
+      setShowCarNumbers(true);
+    } catch (error) {
+      console.error('Error processing image and OCR:', error);
+      // Handle error gracefully, e.g., show an error message
+    }
+  };
 
   const saveAndReadPhoto = async () => {
     try {
@@ -39,23 +53,10 @@ export default function AppCamera() {
         return;
       }
       await MediaLibrary.createAssetAsync(photo.uri);
-
-      const pickedImage = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-      if (!MlkitOcr || typeof MlkitOcr.detectFromUri !== 'function') {
-        throw new Error('MlkitOcr is not initialized correctly.');
-      }
-      const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
-      const carNumber = ocrResult.map(block => block.text).join('\n');
-      // const carNumber = "ABC201"
-      setCarNumber(carNumber);
-      setShowCarNumbers(true);
+      await processImageAndOCR(photo.uri);
     } catch (error) {
-      console.log(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+      console.error('Error saving and reading photo:', error);
+      // Handle error gracefully, e.g., show an error message
     }
   };
 
@@ -68,38 +69,34 @@ export default function AppCamera() {
         quality: 1,
       });
       if (!pickedImage.cancelled) {
-        if (!MlkitOcr || typeof MlkitOcr.detectFromUri !== 'function') {
-          throw new Error('MlkitOcr is not initialized correctly.');
-        }
-        const ocrResult = await MlkitOcr.detectFromUri(pickedImage.uri);
-        const carNumber = ocrResult.map(block => block.text).join('\n');
-        setCarNumber(carNumber);
-        setShowCarNumbers(true);
+        await processImageAndOCR(pickedImage.uri);
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error opening gallery:', error);
+      // Handle error gracefully, e.g., show an error message
     }
   };
 
   const checkCarRegistration = () => {
-    var url = "https://api.mynetra.com/check-registration?regoNumber=" + carNumber;
     setLoading(true);
     setShowCarNumbers(false);
-    axios.get(url)
+    axios.get(`https://api.mynetra.com/check-registration?regoNumber=${carNumber}`)
       .then(response => {
-        var registrationInfo = response.data.registrationInfo;
-        var registrationStatus = registrationInfo.registrationStatus.toLowerCase();
-        setRegistrationInfo(registrationInfo)
-        setValidRegistration(registrationStatus.includes("current"))
-        setExpiredRegistration(registrationStatus.includes("expired"))
+        const registrationInfo = response.data.registrationInfo;
+        const registrationStatus = registrationInfo.registrationStatus.toLowerCase();
+        setRegistrationInfo(registrationInfo);
+        // Assuming these states are derived from registrationStatus
+        const isValid = registrationStatus.includes("current");
+        const isExpired = registrationStatus.includes("expired");
+        setValidRegistration(isValid);
+        setExpiredRegistration(isExpired);
       })
       .catch(error => {
         setShowMessage(true);
-        alert(JSON.stringify(error.message));
+        console.error('Error checking car registration:', error);
+        // Handle error gracefully, e.g., show an error message
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
   };
 
   const handleChange = (text) => {
@@ -111,8 +108,10 @@ export default function AppCamera() {
   };
 
   const clearRegistrationInfo = () => {
-    setRegistrationInfo(null)
-  }
+    setRegistrationInfo(null);
+    setValidRegistration(false); // Reset validity state
+    setExpiredRegistration(false); // Reset expiry state
+  };
 
   const handleDismissMessage = () => {
     setShowMessage(false);
@@ -148,7 +147,6 @@ export default function AppCamera() {
               <MaterialIcons name="flip-camera-ios" size={30} color="black" />
             </TouchableOpacity>
           </View>
-
 
           <View style={styles.cameraPanel}>
             <TouchableOpacity style={styles.captureButton} onPress={saveAndReadPhoto}>
@@ -197,7 +195,6 @@ export default function AppCamera() {
           </SafeAreaView>
         )}
 
-
         {registrationInfo && (
           <CarRegistrationInfo
             registrationInfo={registrationInfo}
@@ -211,12 +208,10 @@ export default function AppCamera() {
             handleChange={handleChange}
             cancelEditing={cancelEditing}
             checkCarRegistration={checkCarRegistration}
-          />)}
-
-
+          />
+        )}
       </View>
     </KeyboardAvoidingView>
   );
 }
-
 
