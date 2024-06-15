@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View, TextInput, KeyboardAvoidingView } from "react-native";
+import { SafeAreaView, ScrollView, Text, TouchableOpacity, View, KeyboardAvoidingView } from "react-native";
 import Slider from '@react-native-community/slider';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Fontisto from '@expo/vector-icons/Fontisto';
@@ -10,8 +10,9 @@ import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import Spinner from 'react-native-loading-spinner-overlay';
 import SelectGalleryButton from "./SelectGalleryButton"; // Importing the custom button component
-import styles from  '../assets/style/style'
+import styles from '../assets/style/style'
 import CarRegistrationInfo from "./CarRegistrationInfo";
+import DetectedCarNumberPanel from "./DetectedCarNumberPanel";
 
 
 export default function AppCamera() {
@@ -40,22 +41,22 @@ export default function AppCamera() {
       await MediaLibrary.createAssetAsync(photo.uri);
 
       const pickedImage = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-    if (!MlkitOcr || typeof MlkitOcr.detectFromUri !== 'function') {
-      throw new Error('MlkitOcr is not initialized correctly.');
-    }
-    const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
-    const carNumber = ocrResult.map(block => block.text).join('\n');
-    // const carNumber = "ABC201"
-    setCarNumber(carNumber);
-    setShowCarNumbers(true);
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
+      if (!MlkitOcr || typeof MlkitOcr.detectFromUri !== 'function') {
+        throw new Error('MlkitOcr is not initialized correctly.');
+      }
+      const ocrResult = await MlkitOcr.detectFromUri(pickedImage.assets[0].uri);
+      const carNumber = ocrResult.map(block => block.text).join('\n');
+      // const carNumber = "ABC201"
+      setCarNumber(carNumber);
+      setShowCarNumbers(true);
     } catch (error) {
       console.log(JSON.stringify(error, Object.getOwnPropertyNames(error)));
-  }
+    }
   };
 
   const openGallery = async () => {
@@ -81,12 +82,12 @@ export default function AppCamera() {
   };
 
   const checkCarRegistration = () => {
-    var url = "https://api.mynetra.com/check-registration?regoNumber="+ carNumber;
+    var url = "https://api.mynetra.com/check-registration?regoNumber=" + carNumber;
     setLoading(true);
     setShowCarNumbers(false);
     axios.get(url)
       .then(response => {
-        var registrationInfo =  response.data.registrationInfo;
+        var registrationInfo = response.data.registrationInfo;
         var registrationStatus = registrationInfo.registrationStatus.toLowerCase();
         setRegistrationInfo(registrationInfo)
         setValidRegistration(registrationStatus.includes("current"))
@@ -109,7 +110,7 @@ export default function AppCamera() {
     setCarNumber('');
   };
 
- const clearRegistrationInfo = () =>{
+  const clearRegistrationInfo = () => {
     setRegistrationInfo(null)
   }
 
@@ -147,18 +148,17 @@ export default function AppCamera() {
               <MaterialIcons name="flip-camera-ios" size={30} color="black" />
             </TouchableOpacity>
           </View>
-            
+
 
           <View style={styles.cameraPanel}>
             <TouchableOpacity style={styles.captureButton} onPress={saveAndReadPhoto}>
               <Fontisto name="camera" size={30} color="black" />
             </TouchableOpacity>
           </View>
-          
-          {/* Use the imported custom button component */}
+
           <SelectGalleryButton
             style={styles.galleryButton}
-            onPress={openGallery} // Use the function to open gallery
+            onPress={openGallery}
             title="Gallery"
           />
         </CameraView>
@@ -199,38 +199,21 @@ export default function AppCamera() {
 
 
         {registrationInfo && (
-                  <CarRegistrationInfo
-                    registrationInfo={registrationInfo}
-                    onClose={clearRegistrationInfo}
-                  />
+          <CarRegistrationInfo
+            registrationInfo={registrationInfo}
+            onClose={clearRegistrationInfo}
+          />
         )}
 
         {showCarNumbers && (
-          <SafeAreaView style={styles.detectedCarNumbersContainer}>
-            <ScrollView contentContainerStyle={styles.scrollView}>
-              <View style={styles.card}>
-                <Text style={styles.detectedCarNumbersTitle}>Detected Car Number</Text>
-                <View style={styles.detectedCarNumbersContainer}>
-                  <View style={styles.textInputContainer}>
-                    <TextInput
-                      style={styles.textInput}
-                      value={carNumber}
-                      onChangeText={handleChange}
-                    />
-                  </View>
-                </View>
-                <View style={styles.buttonGroup}>
-                  <TouchableOpacity style={styles.cancelButton} onPress={cancelEditing}>
-                    <Text style={styles.buttonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.submitButton} onPress={checkCarRegistration}>
-                    <Text style={styles.buttonText}>Submit</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </ScrollView>
-          </SafeAreaView>
-        )}
+          <DetectedCarNumberPanel
+            carNumber={carNumber}
+            handleChange={handleChange}
+            cancelEditing={cancelEditing}
+            checkCarRegistration={checkCarRegistration}
+          />)}
+
+
       </View>
     </KeyboardAvoidingView>
   );
