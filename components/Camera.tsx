@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { SafeAreaView, ScrollView, Text, TouchableOpacity, View, KeyboardAvoidingView } from "react-native";
+import { Button, SafeAreaView, ScrollView, Text, TouchableOpacity, View, KeyboardAvoidingView } from "react-native";
 import Slider from '@react-native-community/slider';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Fontisto from '@expo/vector-icons/Fontisto';
@@ -9,10 +9,11 @@ import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import Spinner from 'react-native-loading-spinner-overlay';
-import SelectGalleryButton from "./SelectGalleryButton"; // Importing the custom button component
+import SelectGalleryButton from "./SelectGalleryButton"; 
 import styles from '../assets/style/style';
 import CarRegistrationInfo from "./CarRegistrationInfo";
 import DetectedCarNumberPanel from "./DetectedCarNumberPanel";
+import SearchRegoButton from "./SearchRegoButton";
 
 export default function AppCamera() {
   const cameraRef = useRef<CameraView>(null);
@@ -23,9 +24,11 @@ export default function AppCamera() {
   const [loading, setLoading] = useState(false);
   const [showCarNumbers, setShowCarNumbers] = useState(false);
   const [registrationInfo, setRegistrationInfo] = useState(null);
-  const [validRegistration, setValidRegistration] = useState(false); // Added state
-  const [expiredRegistration, setExpiredRegistration] = useState(false); // Added state
+  const [validRegistration, setValidRegistration] = useState(false);
+  const [expiredRegistration, setExpiredRegistration] = useState(false);
   const [showMessage, setShowMessage] = useState(false);
+  const [imageUri, setImageUri] = useState(null);
+  const [headingText, setHeadingText] = useState('Detected Car Number');
 
   const carNumberPattern = /\b[A-Za-z0-9 ]{5,6}\b/g;
 
@@ -36,6 +39,7 @@ export default function AppCamera() {
       }
       const ocrResult = await MlkitOcr.detectFromUri(imageUri);
       const carNumber = ocrResult.map(block => block.text).join('\n');
+      // const carNumber = 'ABC200'
       setCarNumber(carNumber);
       setShowCarNumbers(true);
     } catch (error) {
@@ -62,6 +66,7 @@ export default function AppCamera() {
 
   const openGallery = async () => {
     try {
+      setHeadingText('Detected Car Number')
       const pickedImage = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -69,6 +74,7 @@ export default function AppCamera() {
         quality: 1,
       });
       if (!pickedImage.cancelled) {
+        setImageUri(pickedImage.uri);
         await processImageAndOCR(pickedImage.uri);
       }
     } catch (error) {
@@ -85,7 +91,6 @@ export default function AppCamera() {
         const registrationInfo = response.data.registrationInfo;
         const registrationStatus = registrationInfo.registrationStatus.toLowerCase();
         setRegistrationInfo(registrationInfo);
-        // Assuming these states are derived from registrationStatus
         const isValid = registrationStatus.includes("current");
         const isExpired = registrationStatus.includes("expired");
         setValidRegistration(isValid);
@@ -99,18 +104,23 @@ export default function AppCamera() {
       .finally(() => setLoading(false));
   };
 
+  const showCarNumberPanel = () => {
+    setShowCarNumbers(true);
+    setHeadingText('Enter Car Number')
+  };
+
   const handleChange = (text) => {
     setCarNumber(text);
   };
 
   const cancelEditing = () => {
-    setCarNumber('');
+    setShowCarNumbers(false);
   };
 
   const clearRegistrationInfo = () => {
     setRegistrationInfo(null);
-    setValidRegistration(false); // Reset validity state
-    setExpiredRegistration(false); // Reset expiry state
+    setValidRegistration(false);
+    setExpiredRegistration(false);
   };
 
   const handleDismissMessage = () => {
@@ -148,17 +158,24 @@ export default function AppCamera() {
             </TouchableOpacity>
           </View>
 
+        
+
           <View style={styles.cameraPanel}>
             <TouchableOpacity style={styles.captureButton} onPress={saveAndReadPhoto}>
               <Fontisto name="camera" size={30} color="black" />
             </TouchableOpacity>
           </View>
 
+          <SearchRegoButton
+          style={styles.textSearchButton}
+            onPress={showCarNumberPanel}
+           />
+      
           <SelectGalleryButton
             style={styles.galleryButton}
             onPress={openGallery}
-            title="Gallery"
-          />
+            imageUri={imageUri}          />
+
         </CameraView>
 
         <View style={styles.zoomControl}>
@@ -205,6 +222,7 @@ export default function AppCamera() {
         {showCarNumbers && (
           <DetectedCarNumberPanel
             carNumber={carNumber}
+            headingText ={headingText}
             handleChange={handleChange}
             cancelEditing={cancelEditing}
             checkCarRegistration={checkCarRegistration}
@@ -214,4 +232,3 @@ export default function AppCamera() {
     </KeyboardAvoidingView>
   );
 }
-
