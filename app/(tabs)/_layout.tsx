@@ -24,7 +24,7 @@ export default function TabLayout() {
           unmountOnBlur: true
         }}
       />
-<Tabs.Screen
+      <Tabs.Screen
         name="person"
         options={{
           title: 'Person',

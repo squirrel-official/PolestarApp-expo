@@ -1,11 +1,11 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, Image } from 'react-native';
-import searchIcon from '../assets/images/icons/gallery-icon.png'
+import searchIcon from '../../assets/images/icons/search-icon.png'
 
-const SelectGalleryButton = ({ onPress, style }) => {
+const SearchRegoButton = ({ onPress, style }) => {
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
-      <Image source={searchIcon} style={styles.image} />
+      <Image source={searchIcon} style={styles.icon} />
     </TouchableOpacity>
   );
 };
@@ -14,15 +14,14 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#2196F3',
     padding: 10,
-    borderRadius: 0,
+    borderRadius: 5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  image: {
+  icon: {
     width: 30,
     height: 30,
   },
 });
 
-
-export default SelectGalleryButton;
+export default SearchRegoButton;

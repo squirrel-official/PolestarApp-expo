@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
-import styles from "../assets/style/style"; // Adjust the import path based on your actual file structure
+import styles from "../../assets/style/style"; // Adjust the import path based on your actual file structure
 
 const CarRegistrationInfo = ({ registrationInfo, onClose }) => {
   return (

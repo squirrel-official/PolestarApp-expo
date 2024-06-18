@@ -10,10 +10,11 @@ import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import Spinner from 'react-native-loading-spinner-overlay';
 import SelectGalleryButton from "./SelectGalleryButton";
-import styles from '../assets/style/style';
+import styles from '../../assets/style/style';
 import CarRegistrationInfo from "./CarRegistrationInfo";
 import DetectedCarNumberPanel from "./DetectedCarNumberPanel";
 import SearchRegoButton from "./SearchRegoButton";
+import { useFocusEffect } from '@react-navigation/elements';
 
 export default function AppCamera() {
   const cameraRef = useRef<CameraView>(null);

@@ -9,11 +9,11 @@ import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import Spinner from 'react-native-loading-spinner-overlay';
-import SelectGalleryButton from './SelectGalleryButton';
+import SelectGalleryButton from './rego/SelectGalleryButton';
 import styles from '../assets/style/style';
-import CarRegistrationInfo from './CarRegistrationInfo';
-import DetectedCarNumberPanel from './DetectedCarNumberPanel';
-import SearchRegoButton from './SearchRegoButton';
+import CarRegistrationInfo from './rego/CarRegistrationInfo';
+import DetectedCarNumberPanel from './rego/DetectedCarNumberPanel';
+import SearchRegoButton from './rego/SearchRegoButton';
 import { useFocusEffect } from '@react-navigation/native';
 
 export default function PersonCamera() {

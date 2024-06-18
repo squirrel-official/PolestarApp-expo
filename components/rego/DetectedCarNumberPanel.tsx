@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import styles from '../assets/style/style'; // Importing styles from your styles.js file
+import styles from '../../assets/style/style'; // Importing styles from your styles.js file
 
 const DetectedCarNumberPanel = ({ carNumber, headingText, handleChange, cancelEditing, checkCarRegistration }) => {
   return (
