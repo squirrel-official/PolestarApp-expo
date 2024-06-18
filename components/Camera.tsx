@@ -78,6 +78,7 @@ export default function AppCamera() {
         await processImageAndOCR(pickedImage.uri);
       }
     } catch (error) {
+      alert(error)
       console.error('Error opening gallery:', error);
       // Handle error gracefully, e.g., show an error message
     }

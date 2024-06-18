@@ -3,7 +3,6 @@ import { TouchableOpacity, StyleSheet, Image } from 'react-native';
 import searchIcon from '../assets/images/icons/gallery-icon.png'
 
 const SelectGalleryButton = ({ onPress, style }) => {
-
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
       <Image source={searchIcon} style={styles.image} />
@@ -15,7 +14,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: '#2196F3',
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 0,
     alignItems: 'center',
     justifyContent: 'center',
   },
