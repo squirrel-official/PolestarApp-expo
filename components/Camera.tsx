@@ -9,7 +9,7 @@ import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
 import Spinner from 'react-native-loading-spinner-overlay';
-import SelectGalleryButton from "./SelectGalleryButton"; 
+import SelectGalleryButton from "./SelectGalleryButton";
 import styles from '../assets/style/style';
 import CarRegistrationInfo from "./CarRegistrationInfo";
 import DetectedCarNumberPanel from "./DetectedCarNumberPanel";
@@ -158,7 +158,7 @@ export default function AppCamera() {
             </TouchableOpacity>
           </View>
 
-        
+
 
           <View style={styles.cameraPanel}>
             <TouchableOpacity style={styles.captureButton} onPress={saveAndReadPhoto}>
@@ -167,14 +167,14 @@ export default function AppCamera() {
           </View>
 
           <SearchRegoButton
-          style={styles.textSearchButton}
+            style={styles.textSearchButton}
             onPress={showCarNumberPanel}
-           />
-      
+          />
+
           <SelectGalleryButton
             style={styles.galleryButton}
             onPress={openGallery}
-            imageUri={imageUri}          />
+          />
 
         </CameraView>
 
@@ -222,7 +222,7 @@ export default function AppCamera() {
         {showCarNumbers && (
           <DetectedCarNumberPanel
             carNumber={carNumber}
-            headingText ={headingText}
+            headingText={headingText}
             handleChange={handleChange}
             cancelEditing={cancelEditing}
             checkCarRegistration={checkCarRegistration}

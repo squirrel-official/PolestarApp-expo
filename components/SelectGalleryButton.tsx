@@ -1,12 +1,12 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, Image } from 'react-native';
+import searchIcon from '../assets/images/icons/gallery-icon.png'
 
-const SelectGalleryButton = ({ onPress, imageUri, style }) => {
-  const defaultImageUri = 'https://icons.iconarchive.com/icons/praveen/minimal-outline/512/gallery-icon.png';
+const SelectGalleryButton = ({ onPress, style }) => {
 
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
-      <Image source={{ uri: imageUri || defaultImageUri }} style={styles.image} />
+      <Image source={searchIcon} style={styles.image} />
     </TouchableOpacity>
   );
 };
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: 30,
-    height: 30, 
+    height: 30,
   },
 });
 

@@ -1,11 +1,11 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, Image } from 'react-native';
+import searchIcon from '../assets/images/icons/search-icon.png'
 
-const SearchRegoButton = ({onPress, style }) => {
-  const defaultSearchIcon = 'https://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/search-icon.png';
+const SearchRegoButton = ({ onPress, style }) => {
   return (
     <TouchableOpacity style={[styles.button, style]} onPress={onPress}>
-      <Image source={{ uri: defaultSearchIcon }} style={styles.icon} />
+      <Image source={searchIcon} style={styles.icon} />
     </TouchableOpacity>
   );
 };
