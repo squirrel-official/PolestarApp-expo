@@ -5,6 +5,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Fontisto from '@expo/vector-icons/Fontisto';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import MlkitOcr from 'react-native-mlkit-ocr';
+import FaceDetection from '@react-native-ml-kit/face-detection';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
 import axios from 'axios';
@@ -33,23 +34,16 @@ export default function PersonCamera() {
 
   const carNumberPattern = /\b[A-Za-z0-9 ]{5,6}\b/g;
 
-  const processImageAndOCR = async (imageUri) => {
+  const extractPersonFace = async (imageUri) => {
     try {
-      if (!MlkitOcr || typeof MlkitOcr.detectFromUri !== 'function') {
-        throw new Error('MlkitOcr is not initialized correctly.');
-      }
-      const ocrResult = await MlkitOcr.detectFromUri(imageUri);
-      const carNumber = ocrResult.map(block => block.text).join('\n');
-      // const carNumber = 'ABC200'
-      setCarNumber(carNumber);
-      setShowCarNumbers(true);
+      const faces = FaceDetection.detect(imageUri, { landmarkMode: 'all' });
+      alert(faces)
     } catch (error) {
-      console.error('Error processing image and OCR:', error);
-      // Handle error gracefully, e.g., show an error message
+      console.error('Error processing image and face detection:', error);
     }
   };
 
-  const saveAndReadPhoto = async () => {
+  const saveAndExtractPersonFace = async () => {
     try {
       const photo = await cameraRef.current?.takePictureAsync();
       const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -58,10 +52,9 @@ export default function PersonCamera() {
         return;
       }
       await MediaLibrary.createAssetAsync(photo.uri);
-      await processImageAndOCR(photo.uri);
+      await extractPersonFace(photo.uri);
     } catch (error) {
       console.error('Error saving and reading photo:', error);
-      // Handle error gracefully, e.g., show an error message
     }
   };
 
@@ -76,12 +69,11 @@ export default function PersonCamera() {
       });
       if (!pickedImage.cancelled) {
         setImageUri(pickedImage.uri);
-        await processImageAndOCR(pickedImage.uri);
+        await extractPersonFace(pickedImage.uri);
       }
     } catch (error) {
       alert(error)
       console.error('Error opening gallery:', error);
-      // Handle error gracefully, e.g., show an error message
     }
   };
 
@@ -163,7 +155,7 @@ export default function PersonCamera() {
 
 
           <View style={styles.cameraPanel}>
-            <TouchableOpacity style={styles.captureButton} onPress={saveAndReadPhoto}>
+            <TouchableOpacity style={styles.captureButton} onPress={saveAndExtractPersonFace}>
               <Fontisto name="camera" size={30} color="black" />
             </TouchableOpacity>
           </View>
